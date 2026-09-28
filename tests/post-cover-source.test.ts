@@ -6,7 +6,9 @@ import { fileURLToPath } from "node:url";
 import {
 	classifyPostCoverSource,
 	resolvePostCoverSource,
+	selectPostCoverImage,
 } from "../src/utils/post-cover-source.ts";
+import { postCoverConfig } from "../src/config/postCoverConfig.ts";
 
 const repositoryRoot = path.resolve(
 	path.dirname(fileURLToPath(import.meta.url)),
@@ -15,6 +17,40 @@ const repositoryRoot = path.resolve(
 const guidePath = path.join(repositoryRoot, "src/content/posts/guide/index.md");
 
 describe("shared post cover resolution", () => {
+	it("uses an explicit cover before the article body", () => {
+		assert.equal(
+			selectPostCoverImage(
+				"https://example.com/explicit.webp",
+				"![body](https://example.com/first.webp)",
+				guidePath,
+				postCoverConfig.defaultImage,
+			),
+			"https://example.com/explicit.webp",
+		);
+	});
+
+	it("uses the first real body image when the configured cover is the old default", () => {
+		assert.equal(
+			selectPostCoverImage(
+				postCoverConfig.defaultImage,
+				"```md\n![code](https://example.com/code.webp)\n```\n![first](https://example.com/first.webp)\n![second](https://example.com/second.webp)",
+				guidePath,
+				postCoverConfig.defaultImage,
+			),
+			"https://example.com/first.webp",
+		);
+	});
+
+	it("uses the default when there is no usable image", () => {
+		assert.equal(
+			selectPostCoverImage("", "No image here", guidePath, postCoverConfig.defaultImage),
+			postCoverConfig.defaultImage,
+		);
+		assert.equal(
+			selectPostCoverImage("", "![missing](./missing.webp)", guidePath, postCoverConfig.defaultImage),
+			postCoverConfig.defaultImage,
+		);
+	});
 	it("classifies local, public, and remote sources", () => {
 		assert.equal(classifyPostCoverSource("./cover.webp").kind, "local");
 		assert.equal(classifyPostCoverSource("/images/cover.webp").kind, "public");

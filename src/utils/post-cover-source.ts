@@ -1,5 +1,6 @@
 import { existsSync } from "node:fs";
 import path from "node:path";
+import { marked } from "marked";
 
 export type PostCoverKind = "none" | "local" | "public" | "remote" | "api";
 
@@ -28,6 +29,34 @@ export interface PostCoverOptions {
 }
 
 const apiImageCache = new Map<string, Promise<string[]>>();
+
+/** Choose an explicit cover, the first Markdown/HTML image, then the site default. */
+export function selectPostCoverImage(
+	explicit: unknown,
+	markdown: string,
+	contentFilePath: string,
+	defaultImage: string,
+): string {
+	const configured = typeof explicit === "string" ? explicit.trim() : "";
+	if (configured && configured !== defaultImage) return configured;
+
+	let firstImage = "";
+	marked.walkTokens(marked.lexer(markdown), (token) => {
+		if (firstImage) return;
+		if (token.type === "image") firstImage = token.href?.trim() ?? "";
+		if (token.type === "html") {
+			firstImage = token.raw.match(/<img\b[^>]*\bsrc\s*=\s*["']([^"']+)["']/i)?.[1] ?? "";
+		}
+	});
+	if (
+		firstImage &&
+		!/^\s*(?:javascript:|data:|#)/i.test(firstImage) &&
+		classifyPostCoverSource(firstImage, { contentFilePath }).kind !== "none"
+	) {
+		return firstImage;
+	}
+	return defaultImage;
+}
 
 function stableIndex(value: string, length: number): number {
 	let hash = 2166136261;

@@ -190,24 +190,13 @@ export const navBarConfig: NavBarConfig = {
 			],
 		},
 
-		// 自定义一级下拉菜单示例：关于相关
+		// 关于文章和友链
 		{
 			name: "About",
-			url: "/content/",
+			url: "/posts/about-me/",
 			icon: "material-symbols:info",
-			children: [
-				{
-					name: "About",
-					url: "/about/",
-					icon: "material-symbols:person",
-				},
-				{
-					name: "Friends",
-					url: "/friends/",
-					icon: "material-symbols:group",
-				},
-			],
 		},
+		LinkPreset.Friends,
 
 		// 自定义一级下拉菜单示例：其他页面
 		{

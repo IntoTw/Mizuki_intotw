@@ -197,6 +197,8 @@ Spoiler 只是视觉遮罩：
 
 ### 图片
 
+文章封面按以下顺序选择：显式设置的 `image`、正文中的第一张 Markdown/HTML 图片、站点默认封面。旧 WordPress 文章若把默认封面写在 `featuredImage` 中，导入时会把它视作占位图，优先使用正文首图。默认封面配置在 `src/config/postCoverConfig.ts`。代码块里的图片语法不会被当作正文图片；加密文章仍不公开展示封面。
+
 相对图片从当前文章目录解析，根相对路径指向 `public/`，HTTP(S) URL 用于远程图片：
 
 ~~~markdown
@@ -245,6 +247,12 @@ Spoiler 只是视觉遮罩：
 | MDX 导入、JavaScript 导出和 Astro 组件 | [`content-pipeline-fixture.mdx`](../src/content/posts/content-pipeline-fixture.mdx) |
 
 较早的演示文章可能仍展示已不属于当前 schema 的字段。新文章请以本文字段表和源代码为准。
+
+## 维护友链
+
+友链卡片维护在 [`src/data/friends.ts`](../src/data/friends.ts) 的 `friendsData` 数组中，`/friends/` 页面会在构建时读取它。每条友链填写唯一数字 `id`、站名 `title`、头像或 Logo URL `imgurl`、简介 `desc`、站点 URL `siteurl` 和用于筛选的 `tags` 数组。新增时复制一条现有记录并改好这些字段；删除时移除整条记录。修改后重新构建镜像并启动本地容器，刷新 `/friends/` 验证。友链页下方的说明文字则由 [`src/content/spec/friends.md`](../src/content/spec/friends.md) 维护。
+
+当前两条数据从旧 WordPress 的「友人帐」公开页面迁入，主题自带的演示友链已移除。后续如果旧站还有未公开的友链，需要从 WordPress 管理后台导出或手动补入。
 
 ## 发布前清单
 

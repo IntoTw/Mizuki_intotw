@@ -1,8 +1,11 @@
 import { readFile } from "node:fs/promises";
 import { glob } from "astro/loaders";
 import { extractFrontmatter } from "astro/markdown";
+import matter from "gray-matter";
 
+import { postCoverConfig } from "../config/postCoverConfig";
 import { isDateOnlyFrontmatterField } from "../utils/frontmatter-date";
+import { selectPostCoverImage } from "../utils/post-cover-source";
 
 type GlobOptions = Parameters<typeof glob>[0];
 
@@ -32,6 +35,12 @@ export function postGlob(options: GlobOptions): ReturnType<typeof glob> {
 					const rawFrontmatter = extractFrontmatter(source) ?? "";
 					const data = {
 						...props.data,
+						image: selectPostCoverImage(
+							props.data.image,
+							matter(source).content,
+							props.filePath,
+							postCoverConfig.defaultImage,
+						),
 						_publishedDateOnly: isDateOnlyFrontmatterField(
 							rawFrontmatter,
 							"published",
